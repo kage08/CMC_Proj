@@ -13,6 +13,7 @@ def create_complete_graph(num_vertices):
     '''
     graph = np.random.random_integers(0,100,(num_vertices,num_vertices))
     graph = (graph + graph.T)
+    np.fill_diagonal(graph,0)
     return graph
 
 
