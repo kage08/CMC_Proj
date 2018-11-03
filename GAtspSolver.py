@@ -127,24 +127,24 @@ class TSPSolver(TSPPopulation):
 
     
     def get_best_soln(self):
-        fitness = self.fitness(self.costs)
         bestsoln = np.argmin(self.costs)
         return self.costs[bestsoln], self.current_pop[bestsoln]
     
-    def train(self, iters=500, plot=False):
+    def train(self, iters=500, plot=False, plotresult=False, debug=True):
         for i in range(iters):
             self.evolve()
             best = self.get_best_soln()
             self.bestperf.append(best[0])
-            print("Gen:",str(i+1),"Best Cost:", best[0])
+            if debug:
+                print("Gen:",str(i+1),"Best Cost:", best[0])
             if plot:
                 self.graph.plot(best[1],best[0])
-        
-        plt.pause(10)
-        plt.ioff()
-        plt.clf()
-        plt.plot(np.arange(len(self.bestperf)),self.bestperf)
-        plt.show()
+        if plotresult:
+            plt.pause(10)
+            plt.ioff()
+            plt.clf()
+            plt.plot(np.arange(len(self.bestperf)),self.bestperf)
+            plt.show()
         
 
 
