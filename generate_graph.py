@@ -29,6 +29,7 @@ def GeneratePaths(BF_arrMatrix):
     for path in lstTree:
         path.append(last_node)
         path.append(path[0])
+    lstNodes.append(last_node)
     return lstNodes, lstTree
 
 def BruteForce(BF_arrMatrix):
@@ -54,6 +55,7 @@ def BruteForce(BF_arrMatrix):
             # CostPerCycle is calculated from the input Matrix between
             #   each 2 nodes in a cycle
             numCostPerCycle = numCostPerCycle + BF_arrMatrix[cycle[index]][cycle[index+1]]
+        #numCostPerCycle = numCostPerCycle + BF_arrMatrix[cycle[0]][cycle[-1]]
         lstCostList.append(numCostPerCycle)
     # Calculating the least cost cycle
     numLeastCost = min(lstCostList)
