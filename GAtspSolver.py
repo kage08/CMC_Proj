@@ -15,6 +15,8 @@ class TSPPopulation(object):
                 crossover_point_rate = 0.5):
         self.graph = graph
         self.vertices = vertices
+        if self.vertices is None:
+            self.vertices = list(range(self.graph.n))
         self.n = len(vertices)
         self.rg = np.random.RandomState(seed)
 
@@ -73,8 +75,8 @@ class TSPPopulation(object):
 
 
 class TSPSolver(TSPPopulation):
-    def __init__(self,graph,crossover_rate = 0.1,fitness=None,
-                selection_probab = None,cut_frac=0.8, *args, **kwargs):
+    def __init__(self,graph,vertices=None,crossover_rate = 0.1,fitness=None,
+                selection_probab = None,cut_frac=1.0, *args, **kwargs):
 
         self.crossover_rate = crossover_rate
         self.fitness = fitness
@@ -85,7 +87,7 @@ class TSPSolver(TSPPopulation):
         self.selection_probab = selection_probab
         if self.selection_probab is None:
             self.selection_probab = lambda fitness: fitness/np.sum(fitness)
-        super(TSPSolver,self).__init__(graph=graph,*args, **kwargs)
+        super(TSPSolver,self).__init__(graph=graph,vertices=vertices,*args, **kwargs)
         self.max_pop=self.pop_size
         self.evalpop()
         self.bestperf = []
