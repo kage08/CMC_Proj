@@ -130,7 +130,7 @@ def greedy(cities, start_city=0):
                 if current_cost > cities[temp][x]:
                     current_cost = cities[temp][x]
                     position = x
-        cost += int(current_cost)
+        cost += current_cost
         #Reset current cost for next calculating
         current_cost = 0
         temp = position
