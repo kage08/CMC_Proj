@@ -151,5 +151,3 @@ class TSPSolver(TSPPopulation):
             plt.clf()
             plt.plot(np.arange(len(self.bestperf)),self.bestperf)
         
-
-

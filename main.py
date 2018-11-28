@@ -1,5 +1,5 @@
 from GAtspSolver import TSPSolver
-from Metasolver import MetaSolver
+from MetaTSPsolver import MetaSolver
 from graph import pointGraph, adjGraph
 from generate_graph import *
 from selection_functions import *

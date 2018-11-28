@@ -1,6 +1,6 @@
-from solver import *
+from Polysolver import *
 import numpy as np
-from GASolver import MetaRegressor
+from MetaRegressorSolver import MetaRegressor
 from selection_functions import *
 import matplotlib.pyplot as plt
 
@@ -18,6 +18,6 @@ def loss(y1,y):
     return np.mean(np.square(y1-y))
 
 
-mr = MetaRegressor(loss_fun=loss)
+mr = MetaRegressor(loss_fun=loss, ga=True, pop_size=50)
 mr.init_solver(crossover_rate=0.3, selection_fun=percentile, percentile=60)
-mr.train(xtrain,ytrain, xtest, ytest, iters=10, subiters=50)
+mr.train(xtrain,ytrain, xtest, ytest, iters=100, subiters=50)
