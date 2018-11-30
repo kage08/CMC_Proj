@@ -1,3 +1,7 @@
+'''
+Different selection strategies
+'''
+
 import numpy as np
 
 def minmax(**kwargs):

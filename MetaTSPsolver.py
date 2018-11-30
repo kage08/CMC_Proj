@@ -6,7 +6,11 @@ from copy import deepcopy
 import matplotlib.pyplot as plt
 import pdb
 from selection_functions import minmax
+from copy import deepcopy
 
+'''
+Meta TSP solver
+'''
 
 class MetaPopulation(object):
     
@@ -26,7 +30,7 @@ class MetaPopulation(object):
         self.tsp_params = tsp_params
         self.reset()
     
-
+    #Re-initialize random population
     def reset(self):
         self.current_pop_ = [self.rg.choice(self.n,size=self.rg.randint(self.min_popsize,self.n+1), replace=False) for _ in range(self.pop_size)]
         self.current_pop = np.vstack([np.isin(list(range(self.n)),x) for x in self.current_pop_])
@@ -37,15 +41,27 @@ class MetaPopulation(object):
     def gen_size(self):
         return len(self.current_pop)
     
-    def evalpop(self):
+    #Evaluate of cost of individuals
+    def evalpop(self, penalty=None):
+        if penalty is None:
+            penalty = self.penalty
+        else:
+            assert len(penalty)==self.n, "Check penalty dimension."
+        
+        #Initialize costs
         self.costs = np.zeros(self.gen_size)
+        self.path_costs = np.zeros(self.gen_size)
         self.trajs = []
+
         for i in range(self.gen_size):
             soln = self.current_solvers[i].get_best_soln()
             self.trajs.append(soln[1])
-            self.costs[i] = soln[0]
-            self.costs[i] += np.sum(self.penalty[~self.current_pop[i]])
+            #Get cost of path
+            self.path_costs[i] = soln[0]
+            #Add penalty for leftover vertices
+            self.costs[i] = self.path_costs[i] + np.sum(penalty[~self.current_pop[i]])
     
+    #Initialize new TSP solver with given subset of vertices
     def get_solver(self,ind):
         v = np.arange(self.n)[ind]
         return TSPSolver(graph=self.graph, vertices=v)
@@ -55,9 +71,11 @@ class MetaPopulation(object):
         if crossover_point_rate is None:
             crossover_point_rate = self.crossover_rate
         cross_points = self.rg.binomial(1,crossover_point_rate,self.n).astype(np.bool)
-        new_ind1 = ind1[:]
+
+        #Swap values of genotype
+        new_ind1 = deepcopy(ind1)
         new_ind1[cross_points] = ind2[cross_points]
-        new_ind2 = ind2[:]
+        new_ind2 = deepcopy(ind2)
         new_ind2[cross_points] = ind1[cross_points]
 
         return new_ind1, new_ind2
@@ -65,9 +83,10 @@ class MetaPopulation(object):
     def mutate(self,ind,mutation_rate=None):
         if mutation_rate is None:
             mutation_rate = self.mutation_rate
-        new_ind = ind[:]
+        new_ind = deepcopy(ind)
         for point in np.arange(self.n):
             if self.rg.rand() < mutation_rate:
+                #Toggle the value at loci
                 new_ind[point] = ~new_ind[point]
         
         return new_ind
@@ -99,14 +118,16 @@ class MetaSolver(MetaPopulation):
 
         self.debug = False
     
+    #Train the TSP solvers
     def one_step_train(self,subiters=None, debug=False):
         if subiters is None:
             subiters = self.subiters
         for solver in self.current_solvers:
             solver.train(iters=subiters, debug=debug)
     
+    #Selection strategy
     def evolve(self):
-        #self.one_step_train(self.subiters)
+        #Compute fitness
         if self.debug:
             pdb.set_trace()
         fitness = self.fitness(self.costs)
@@ -114,7 +135,6 @@ class MetaSolver(MetaPopulation):
         
 
         #Select population
-        #select_index = self.rg.choice(np.arange(self.gen_size),size=int(self.gen_size*self.cut_frac), replace=True, p=select)
         select_index = self.selection_fun(fitness=fitness,gen_size=self.gen_size, cut_frac=self.cut_frac, percentile=self.percentile)
         if not (bestsoln in select_index):
             select_index = np.append(select_index,bestsoln)
@@ -178,19 +198,25 @@ class MetaSolver(MetaPopulation):
             self.graph.plot(t,c)
         return c,t
     
-    def train(self,iters=500,plot=False,debug_2=False):
+    #Training procedure
+    def train(self,iters=500,plot=False,debug_2=False,penalty=None):
+        if penalty is None:
+            penalty = self.penalty
         for i in range(iters):
+
+            #Train TSP solvers
             self.one_step_train(self.subiters,debug_2)
+            self.evalpop()
+            #Select individuals for next generation
             self.evolve()
+            self.evalpop(penalty=penalty)
             best = self.get_best_soln()
             self.bestperf.append(best[0])
             print("Gen:",str(i+1),"Best Cost:", best[0])
             if plot:
-                self.graph.plot(best[1],best[0])
+                self.graph.plot(best[1],best[0], penalty)
         
-        #plt.pause(10)
         plt.clf()
+        plt.xlabel('Generations')
+        plt.ylabel('Cost')
         plt.plot(np.arange(len(self.bestperf)),self.bestperf)
-
-
-        

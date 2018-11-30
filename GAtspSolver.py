@@ -5,7 +5,9 @@ import matplotlib.pyplot as plt
 import pdb
 from selection_functions import minmax
 
-
+'''
+TSP solver using genetic algorithm
+'''
 
 class TSPPopulation(object):
 
@@ -39,14 +41,16 @@ class TSPPopulation(object):
         self.costs = np.empty((len(self.current_pop)))
         self.evalpop()
     
-    
+    #Evaluate cost of solutions
     def evalpop(self):
         self.costs = np.zeros(self.gen_size)
         for i, p in enumerate(self.current_pop):
+            #Sum up the weights of path
             for j in range(self.n-1):
                 self.costs[i] += self.graph.get_dist(p[j],p[j+1])
             #self.costs[i] += self.graph.get_dist(p[0],p[-1])
-        
+    
+    #Mutate ind
     def mutate(self,ind,mutate_rate=None, copy_ind=False):
         if mutate_rate is None:
             mutate_rate = self.mutation_rate
@@ -57,6 +61,7 @@ class TSPPopulation(object):
         
         for point in range(self.n):
             if self.rg.rand() < mutate_rate:
+                #Swap two vertices in permutation
                 swap_point = self.rg.randint(self.n)
                 a,b = ind[point], ind[swap_point]
                 new_ind[point], new_ind[swap_point] = b,a
@@ -97,12 +102,12 @@ class TSPSolver(TSPPopulation):
 
     
     def evolve(self):
+        #Compute fitness
         fitness = self.fitness(self.costs)
         bestsoln = np.argmax(fitness)
         
 
         #Select population
-        #select_index = self.rg.choice(np.arange(self.gen_size),size=int(self.gen_size*self.cut_frac), replace=True, p=select)
         select_index = self.selection_fun(fitness=fitness,gen_size=self.gen_size, cut_frac=self.cut_frac, percentile=self.percentile)
         if not (bestsoln in select_index):
             select_index = np.append(select_index,bestsoln)
@@ -114,6 +119,8 @@ class TSPSolver(TSPPopulation):
         bestsoln = np.argmax(fitness)
 
         new_pop = self.current_pop.copy()
+
+        #Perform Crossovers
         for i in range(self.gen_size):
             ind = self.current_pop[i]
             ind2 = self.rg.randint(self.gen_size)
@@ -125,29 +132,34 @@ class TSPSolver(TSPPopulation):
                     new_pop = np.append(new_pop,[new_ind], axis=0)
                 elif i != bestsoln:
                     new_pop[i,:] = new_ind
+            #Perform mutation
             if i != bestsoln:
                 new_pop[i,:] = self.mutate(ind)
         
         self.current_pop = new_pop
         self.evalpop()
 
-    
+    #Return best of current population
     def get_best_soln(self):
         bestsoln = np.argmin(self.costs)
         return self.costs[bestsoln], self.current_pop[bestsoln]
     
+    #Training to evolve
     def train(self, iters=500, plot=False, plotresult=False, debug=True):
         for i in range(iters):
             self.evolve()
             best = self.get_best_soln()
             self.bestperf.append(best[0])
+
             if debug:
                 print("Gen:",str(i+1),"Best Cost:", best[0])
+
             if plot:
                 self.graph.plot(best[1],best[0])
+
         if plotresult:
-            #plt.pause(10)
-            #plt.ioff()
             plt.clf()
+            plt.xlabel('Generations')
+            plt.ylabel('Cost')
             plt.plot(np.arange(len(self.bestperf)),self.bestperf)
         

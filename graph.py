@@ -43,9 +43,9 @@ class pointGraph(Graphs):
                 self.adj[i,j] = self.adj[j,i] = self.get_dist1(i,j)
         return self.adj
     
-    def plot(self,path,path_dist):
+    def plot(self,path,path_dist, penalty=None):
         plt.cla()
-        plt.scatter(self.parray[:,0],self.parray[:,1], s=100, c='k')
+        plt.scatter(self.parray[:,0],self.parray[:,1], s=100, c=penalty)
         xs = [self.parray[i,0] for i in path]
         ys = [self.parray[i,1] for i in path]
         plt.plot(xs,ys)
