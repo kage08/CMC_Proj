@@ -1,7 +1,7 @@
 # CMC_Proj: Hierarchical Framework for Genetic Algorithms
 ## Authors: [Harshavardhan P K](https://github.com/CS15B061) and Kousik Krishnan
 
-###Introduction
+### Introduction
 We implemented a hierarchical framework for genetic algorithms where we serch through space of objective functions and then search solution for these objectives.
 
 ### Requirements
